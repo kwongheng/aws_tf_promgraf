@@ -8,6 +8,11 @@ data "aws_security_group" "default" {
   name   = "default"
 }
 
+# Data source to fetch your public IP
+data "http" "myip_address" {
+  url = "http://ipv4.icanhazip.com" # Reliable service to get your public IP
+}
+
 # Create Security Group - SSH Traffic
 resource "aws_security_group" "vpc-ssh" {
   name        = "vpc-ssh"
@@ -17,7 +22,7 @@ resource "aws_security_group" "vpc-ssh" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [ var.myip_address ]
+    cidr_blocks = ["${chomp(data.http.myip_address.response_body)}/32"]
   }
 
   egress {
@@ -42,7 +47,7 @@ resource "aws_security_group" "vpc-promsvr" {
     from_port   = 9090
     to_port     = 9090
     protocol    = "tcp"
-    cidr_blocks = [ var.myip_address ]
+    cidr_blocks = ["${chomp(data.http.myip_address.response_body)}/32"]
   }
   egress {
     description = "Allow all ip and ports outbound"    
@@ -79,6 +84,30 @@ resource "aws_security_group" "vpc-nexport" {
 
   tags = {
     Name = "vpc-nexport"
+  }
+}
+
+#grafana port
+resource "aws_security_group" "vpc-grafana" {
+  name        = "vpc-grafana"
+  description = "Dev Grafana port"
+  ingress {
+    description = "Allow Port 3000"
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["${chomp(data.http.myip_address.response_body)}/32"]
+  }
+  egress {
+    description = "Allow all ip and ports outbound"    
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "vpc-grafana"
   }
 }
 

@@ -20,8 +20,3 @@ variable "instance_keypair" {
   default = "terraform-key"
 }
 
-variable "myip_address" {
-  description = "My IP address"
-  type = string
-  default = "27.145.158.118/32"
-}
