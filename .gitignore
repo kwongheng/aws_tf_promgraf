@@ -1,5 +1,6 @@
 # generic files
 *.pem
+/private-key
 
 # Local .terraform directories
 .terraform/
